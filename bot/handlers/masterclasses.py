@@ -18,7 +18,12 @@ from sqlalchemy import select
 
 router = Router(name="masterclasses")
 logger = logging.getLogger(__name__)
-PROJ_ROOT = Path(__file__).resolve().parent.parent
+# Исправление пути: PROJ_ROOT должен указывать на корень проекта.
+# __file__ = bot/handlers/masterclasses.py
+# parent = bot/handlers
+# parent.parent = bot
+# parent.parent.parent = корень проекта
+PROJ_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def _decode_cat(code: str) -> str | None:
@@ -36,6 +41,7 @@ def _build_photo_input(mc: MasterClass, base_url: str) -> FSInputFile | URLInput
     raw = (mc.photo_url or "").strip()
     if raw.startswith("/static/photos/"):
         name = raw.rsplit("/", 1)[-1]
+        # Исправленный путь: PROJ_ROOT указывает на корень проекта, где лежит папка data
         local = PROJ_ROOT / "data" / "photos" / name
         if local.is_file():
             return FSInputFile(local, filename=name)
