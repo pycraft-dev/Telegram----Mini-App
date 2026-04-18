@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.routes import bookings, health, masterclasses
+from api.deps import db_session
+from api.routes import bookings, masterclasses
 from config import get_settings
 from database import init_db
 from api.middleware import RateLimitMiddleware
@@ -74,7 +79,33 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(RateLimitMiddleware, max_requests=40, window_seconds=60)
 
-    app.include_router(health.router)
+    @app.get(
+        "/api/health",
+        tags=["health"],
+        summary="Health check",
+        responses={200: {"description": "Сервис и БД доступны"}},
+    )
+    async def health_check(
+        session: Annotated[AsyncSession, Depends(db_session)],
+    ) -> dict[str, str]:
+        """Пинг для UptimeRobot / Render; проверяет соединение с БД."""
+        await session.execute(text("SELECT 1"))
+        return {
+            "status": "ok",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service": "Melody Mini App",
+            "database": "ok",
+        }
+
+    @app.get("/api", tags=["meta"], summary="Короткая проверка API")
+    async def api_root_info() -> dict[str, str]:
+        """
+        Лёгкий JSON без обращения к БД.
+
+        Путь ``GET /`` нельзя занимать здесь: ниже смонтирован Mini App (StaticFiles).
+        """
+        return {"message": "Melody API is running"}
+
     app.include_router(masterclasses.router)
     app.include_router(bookings.router)
 

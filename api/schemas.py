@@ -63,10 +63,3 @@ class BookingWithClassOut(BookingOut):
 
     master_class_name: str
     master_class_date_time: datetime
-
-
-class HealthOut(BaseModel):
-    """Состояние сервиса."""
-
-    status: str
-    database: str

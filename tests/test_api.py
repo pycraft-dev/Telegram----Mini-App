@@ -16,6 +16,16 @@ async def test_health(api_client: AsyncClient) -> None:
     data = r.json()
     assert data["status"] == "ok"
     assert data["database"] == "ok"
+    assert data["service"] == "Melody Mini App"
+    assert "timestamp" in data
+
+
+@pytest.mark.asyncio
+async def test_api_root_json(api_client: AsyncClient) -> None:
+    """GET /api — короткий ответ без БД."""
+    r = await api_client.get("/api")
+    assert r.status_code == 200
+    assert r.json() == {"message": "Melody API is running"}
 
 
 @pytest.mark.asyncio
