@@ -33,10 +33,13 @@ class AddMasterClassForm(StatesGroup):
 
 
 def _is_admin(user_id: int | None) -> bool:
-    """Проверяет, входит ли пользователь в ADMIN_IDS."""
+    """Проверяет, входит ли пользователь в ADMIN_IDS (или включён демо-режим)."""
     if user_id is None:
         return False
-    return user_id in get_settings().admin_ids
+    settings = get_settings()
+    if settings.demo_mode:
+        return True
+    return user_id in settings.admin_ids
 
 
 @router.message(Command("admin"))

@@ -18,4 +18,7 @@ class AdminFilter(BaseFilter):
         uid = event.from_user.id if event.from_user else None
         if uid is None:
             return False
-        return uid in get_settings().admin_ids
+        settings = get_settings()
+        if settings.demo_mode:
+            return True
+        return uid in settings.admin_ids

@@ -10,6 +10,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
+from bot.commands import setup_bot_commands
 from bot.error_handlers import register_global_errors
 from bot.handlers import setup_routers
 from bot.middlewares import LoggingMiddleware
@@ -33,7 +34,12 @@ async def main() -> None:
     dp.update.middleware(LoggingMiddleware())
     register_global_errors(dp)
     setup_routers(dp)
-    logger.info("Бот запущен")
+    await setup_bot_commands(bot)
+    if settings.demo_mode:
+        logger.warning(
+            "DEMO_MODE=true: /admin доступен любому пользователю. На продакшене отключите!",
+        )
+    logger.info("Бот запущен, меню команд настроено")
     await dp.start_polling(bot)
 
 

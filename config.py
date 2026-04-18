@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     )
     secret_key: str = Field(..., min_length=8, description="Секрет для демо-заголовков/тестов")
     admin_ids: list[int] = Field(default_factory=list, description="Telegram ID администраторов")
+    demo_mode: bool = Field(
+        default=False,
+        description="Демо для клиента: /admin и админ-кнопки доступны всем (только тестовый стенд!)",
+    )
     webapp_url: HttpUrl = Field(..., description="Публичный HTTPS URL Mini App (ngrok)")
 
     skip_init_data_validation: bool = Field(
@@ -57,6 +61,18 @@ class Settings(BaseSettings):
             parts = [p.strip() for p in value.split(",") if p.strip()]
             return parts or None
         raise TypeError("cors_origins должен быть списком или строкой")
+
+    @field_validator("demo_mode", mode="before")
+    @classmethod
+    def parse_demo_mode(cls, value: Any) -> bool:
+        """Парсит DEMO_MODE из строки окружения."""
+        if value is None or value == "":
+            return False
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.strip().lower() in ("1", "true", "yes", "on")
+        return bool(value)
 
     @field_validator("admin_ids", mode="before")
     @classmethod
