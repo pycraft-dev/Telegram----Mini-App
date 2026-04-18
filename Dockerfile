@@ -13,8 +13,6 @@ COPY . .
 # Создаем директорию для данных (БД и фото)
 RUN mkdir -p /app/data/photos
 
-# Запускаем от непривилегированного пользователя (опционально, но рекомендуется)
-# RUN useradd -m botuser && chown -R botuser:botuser /app
-# USER botuser
-
-CMD ["python", "main.py"]
+# Запускаем API в фоне (порт 8000) и бота на переднем плане
+# Это позволяет запустить оба процесса в одном контейнере (идеально для Amvera)
+CMD uvicorn api.main:app --host 0.0.0.0 --port 8000 & python main.py
