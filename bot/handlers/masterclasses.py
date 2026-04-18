@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import logging
 from pathlib import Path
 
@@ -126,12 +127,12 @@ async def on_masterclass_open(callback: CallbackQuery) -> None:
     photo_input = _build_photo_input(mc, base)
 
     caption = (
-        f"<b>{mc.name}</b>\n"
-        f"Категория: {mc.category}\n"
+        f"<b>{html.escape(mc.name)}</b>\n"
+        f"Категория: {html.escape(mc.category)}\n"
         f"Дата: {mc.date_time.strftime('%d.%m.%Y %H:%M')}\n"
         f"Цена: {mc.price} ₽\n"
         f"Мест: до {mc.max_participants}\n\n"
-        f"{mc.description}"
+        f"{html.escape(mc.description or '')}"
     )
     kb = masterclass_actions_keyboard(mc.id, cat_code)
     chat_id = callback.message.chat.id
@@ -151,11 +152,22 @@ async def on_masterclass_open(callback: CallbackQuery) -> None:
         )
     except TelegramBadRequest:
         logger.exception("Не удалось отправить фото для МК id=%s, отправляю текст", mc.id)
-        await callback.bot.send_message(
-            chat_id=chat_id,
-            text=caption,
-            parse_mode=ParseMode.HTML,
-            reply_markup=kb,
-        )
+        try:
+            await callback.bot.send_message(
+                chat_id=chat_id,
+                text=caption,
+                parse_mode=ParseMode.HTML,
+                reply_markup=kb,
+            )
+        except TelegramBadRequest:
+            plain = (
+                f"{mc.name}\n"
+                f"Категория: {mc.category}\n"
+                f"Дата: {mc.date_time.strftime('%d.%m.%Y %H:%M')}\n"
+                f"Цена: {mc.price} ₽\n"
+                f"Мест: до {mc.max_participants}\n\n"
+                f"{mc.description or ''}"
+            )
+            await callback.bot.send_message(chat_id=chat_id, text=plain, reply_markup=kb)
 
     await callback.answer()

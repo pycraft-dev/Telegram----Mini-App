@@ -35,8 +35,10 @@ ENV/
 *.swp
 *.swo
 
-# Project specific
-data/
+# Project specific (папку data/photos нужно включать в образ — иначе карточки МК падают)
+data/*.db
+data/*.db-shm
+data/*.db-wal
 demo.db
 .env
 debug*.log
