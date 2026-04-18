@@ -135,6 +135,7 @@ flowchart LR
 | ngrok меняет URL                              | Обновите `WEBAPP_URL` в `.env` и перезапустите бота                                                                                                                                                 |
 | Окно ngrok сразу закрывается                  | Выполните `ngrok config add-authtoken …` (токен в [дашборде ngrok](https://dashboard.ngrok.com/)); проверьте, что `ngrok` в PATH. Окно из мастера запускается через `cmd /k`, текст ошибки остаётся |
 | `NoSuchModuleError: ...:https` при старте API | В `DATABASE_URL` случайно указан https-адрес. Оставьте `sqlite+aiosqlite:///./demo.db`, а ngrok — только в `WEBAPP_URL`                                                                             |
+| `Conflict: terminated by other getUpdates`    | С **одним токеном** одновременно работает только **один** polling: остановите бота на ПК (`launch_gui` / `python main.py`), второй Render-сервис или старый деплой. Оставьте только один процесс с `getUpdates`. |
 
 
 ## Чеклист перед демо
